@@ -1,8 +1,20 @@
 """"Student Name : Eaint Taryar Linlat"""
 ###############################################################################
-# Task 10 — Receipt Total Extraction with Gemini
-# Run locally:  python Task_10.py
-# Requirements: pip install google-genai Pillow pandas
+Task 10: Receipt Total Extraction with Gemini VLM
+In this task, I used Google's Gemini 2.5 Flash vision-language model to extract the total price from a receipt image — a real-world document OCR problem.
+What I did:
+
+Loaded a receipt image using PIL, converted it to JPEG bytes, and sent it directly to Gemini via the google-genai client without any preprocessing or fine-tuning
+Designed a structured extraction prompt that instructs Gemini to return only a plain float, with explicit examples ($19.74 → 19.74) and a NULL fallback if the total cannot be found — this removes ambiguity and reduces format errors
+Parsed the response robustly — stripped currency symbols and non-numeric characters using regex, handled multiple decimal points by keeping only the last one, and returned None for failed extractions
+Added retry logic with exponential back-off (waits 1s, then 2s) to handle temporary API errors gracefully
+Built a small DataFrame (df_receipt) to support processing multiple receipt images in batch
+
+Key lessons:
+
+Prompt specificity directly affects output quality — without explicit format instructions and examples, the model may return "The total is $19.74" instead of "19.74", which breaks parsing
+NULL handling is important — telling the model exactly what to return when it cannot find an answer prevents hallucinated totals that look plausible but are wrong
+VLMs require no training for this task — Gemini reads and understands receipt layouts zero-shot, which would be impossible with traditional regex-based OCR on varied receipt formats
 ###############################################################################
 
 import os
